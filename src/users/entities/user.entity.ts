@@ -1,6 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Role } from '../../auth/enums/role.enum';
 import { Review } from '../../reviews/entities/review.entity';
+import { Product } from '../../products/entities/product.entity';
 
 @Entity()
 export class User {
@@ -15,4 +23,8 @@ export class User {
 
   @OneToMany(() => Review, (review) => review.user)
   reviews: Review[];
+
+  @ManyToMany(() => Product)
+  @JoinTable()
+  wishlist: Product[];
 }
