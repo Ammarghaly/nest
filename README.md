@@ -1,120 +1,110 @@
-# 🚀 NestJS Tasks API - Production Grade
+# Student Tasks - New Module Scenarios
 
-A robust, enterprise-ready Tasks Management API built with **NestJS**, **TypeORM**, and **PostgreSQL**. This project has been upgraded from a basic boilerplate to a production-grade system with advanced features.
+Build each task as a new module from scratch. Reuse patterns from existing modules (`categories`, `products`, `orders`, `auth`).
 
----
+##  Scenario 1 - Reviews Module (Implement)
 
-## ✨ Key Features
+- [ ] Create `reviews` module where customers can review products.
+  - **Goal:** Practice new entity relations and guarded endpoints.
+  - **Entities/Relations:** `Review` belongs to `User` and `Product`.
+  - **Required fields:** `id`, `rating (1-5)`, `comment`, `userId`, `productId`, timestamps.
+  - **Endpoints:**
+    - `POST /reviews` (customer only)
+    - `GET /reviews/product/:productId` (public)
+    - `DELETE /reviews/:id` (review owner or admin)
+  - **Must use:** DTOs, validation pipe, `JwtAuthGuard`, `RolesGuard`.
+  - **Test checklist:** customer creates review, public can list product reviews, unauthorized create blocked.
 
-- **🗄️ Database Integration**: Fully integrated with **PostgreSQL** using TypeORM.
-- **🆔 UUID Support**: Uses version 4 UUIDs as primary keys for enhanced security and scalability.
-- **🛡️ Data Validation**: Automatic request validation using `class-validator` and `ValidationPipe`.
-- **🪵 Logging**: Custom `LoggingInterceptor` to track request methods, paths, and execution time.
-- **🚨 Error Handling**: Standardized error responses through a global `HttpExceptionFilter`.
-- **🐋 Dockerized**: Ready to run with a single command using `docker-compose`.
+## Scenario 2 - Coupons Module (Implement)
 
----
+- [ ] Create `coupons` module for discount codes.
+  - **Goal:** Practice admin-only CRUD + validation + expiration logic.
+  - **Entity:** `Coupon` with `code`, `discountPercent`, `expiresAt`, `isActive`.
+  - **Endpoints:**
+    - `POST /coupons` (admin)
+    - `GET /coupons` (admin)
+    - `PATCH /coupons/:id` (admin)
+    - `DELETE /coupons/:id` (admin)
+  - **Business rules:**
+    - `code` must be unique.
+    - `discountPercent` must be between 1 and 90.
+    - expired coupon cannot be activated.
+  - **Must use:** DTOs, custom validation, exception handling with friendly errors.
+  - **Test checklist:** duplicate code rejected, invalid discount rejected, admin-only access enforced.
 
-## 🛠️ Technology Stack
+## Scenario 3 - Wishlist Module (Implement)
 
-| Technology | Purpose |
-| :--- | :--- |
-| **NestJS** | Modern Node.js framework |
-| **TypeScript** | Static typing for JavaScript |
-| **TypeORM** | Object-Relational Mapper (ORM) |
-| **PostgreSQL** | Relational database system |
-| **Docker** | Containerization |
+- [ ] Create `wishlist` module where each customer saves favorite products.
+  - **Goal:** Practice many-to-many relation and user-scoped data.
+  - **Relation:** `User` many-to-many `Product` through `WishlistItem` or join table.
+  - **Endpoints:**
+    - `POST /wishlist/:productId` (customer)
+    - `GET /wishlist/me` (customer)
+    - `DELETE /wishlist/:productId` (customer)
+  - **Business rules:**
+    - Same product cannot be added twice for same user.
+    - Cannot add a product that does not exist.
+  - **Must use:** param pipe for `productId`, DTO if needed, auth guard.
+  - **Test checklist:** add/list/remove works; duplicate add blocked.
 
----
+## Scenario 4 - Addresses Module (Implement)
 
-## 🚦 Getting Started
+- [ ] Create `addresses` module for shipping addresses per user.
+  - **Goal:** Practice nested validation and one-to-many relation.
+  - **Relation:** `User (1) -> (N) Address`.
+  - **Fields:** `city`, `street`, `building`, `postalCode`, `country`, `isDefault`.
+  - **Endpoints:**
+    - `POST /addresses` (customer)
+    - `GET /addresses/me` (customer)
+    - `PATCH /addresses/:id` (customer owner only)
+    - `DELETE /addresses/:id` (customer owner only)
+  - **Business rules:**
+    - Only one default address per user.
+    - User cannot edit/delete another user's address.
+  - **Must use:** DTOs, auth guard, service-level ownership checks.
+  - **Test checklist:** ownership enforced, default address rule works.
 
-### Prerequisites
 
-- [Node.js](https://nodejs.org/) (Version 16 or later)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
-### Installation
 
-1. Clone the repository:
-   ```bash
-   git clone <repository_url>
-   cd Nest-Project
-   ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
 
-3. Spin up the PostgreSQL database:
-   ```bash
-   docker-compose up -d
-   ```
 
-4. Start the application:
-   ```bash
-   npm run start:dev
-   ```
 
-The API will be available at `http://localhost:3000`.
 
----
 
-## 🔗 Endpoints
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/task` | Create a new task |
-| `GET` | `/task` | Get all tasks |
-| `GET` | `/task/:id` | Get a specific task by UUID |
-| `PATCH` | `/task/:id/status` | Update a task's status |
-| `DELETE` | `/task/:id` | Delete a task |
 
-### 🚀 Validation Examples
 
-**Example POST Request Body:**
-```json
-{
-  "title": "Buy groceries",
-  "description": "Milk, eggs, and bread"
-}
-```
 
-**Standardized Error Response:**
-```json
-{
-  "statusCode": 400,
-  "timestamp": "2026-04-07T13:22:21Z",
-  "path": "/task",
-  "message": [
-    "title should not be empty",
-    "title must be longer than or equal to 3 characters"
-  ]
-}
-```
 
----
 
-## 📝 Custom Interceptors & Filters
+## Scenario 5 - Payments Module (Simple)
 
-### Logging Interceptor
-Logs every request in the following format:
-`[METHOD] /path — Xms`
+- [ ] Create `payments` module to simulate order payment.
+  - **Goal:** Practice module integration with `orders`.
+  - **Entity:** `Payment` with `orderId`, `amount`, `method`, `status`, `transactionRef`.
+  - **Endpoints:**
+    - `POST /payments/pay/:orderId` (customer owner of order)
+    - `GET /payments/order/:orderId` (customer owner or admin)
+  - **Business rules:**
+    - Order can be paid only once.
+    - Payment amount must equal order `totalPrice`.
+    - On successful payment, update order status `pending -> paid`.
+  - **Must use:** transaction-safe service logic (simple), exception filter for failures.
+  - **Test checklist:** valid payment updates order, second payment attempt rejected.
 
-### Http Exception Filter
-Ensures all errors follow a consistent structure:
-```json
-{
-  "statusCode": number,
-  "message": string | string[],
-  "timestamp": ISO string,
-  "path": string
-}
-```
+## Scenario 6 - Notifications Module (Interceptor + Middleware Practice)
 
----
-
-## 📜 License
-
-Distributed under the **UNLICENSED** license. Created as a production-grade upgrade demonstration.
+- [ ] Create `notifications` module for user notifications.
+  - **Goal:** Practice cross-cutting concerns with module endpoints.
+  - **Entity:** `Notification` with `userId`, `title`, `message`, `isRead`.
+  - **Endpoints:**
+    - `POST /notifications` (admin creates for a user)
+    - `GET /notifications/me` (customer)
+    - `PATCH /notifications/:id/read` (customer owner)
+  - **Requirements:**
+    - Add or reuse interceptor to return consistent response envelope.
+    - Ensure middleware logs notification endpoints.
+  - **Must use:** guards, DTOs, pipes, interceptor behavior.
+  - **Test checklist:** admin can create; user can read own list and mark as read.
